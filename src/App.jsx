@@ -9,6 +9,8 @@ import CreateOrder, {
 } from './features/order/CreateOrder.jsx';
 import AppLayout from './ui/AppLayout.jsx';
 import Error from './ui/Error.jsx';
+import { Provider } from 'react-redux';
+import { store } from './store.js';
 
 const router = createBrowserRouter([
   {

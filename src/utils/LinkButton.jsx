@@ -5,7 +5,6 @@ export default function LinkButton({ children, path }) {
   if (path === '-1')
     return <button onClick={() => navigate(-1)}>{children}</button>;
 
-  console.log('done');
   return (
     <Link
       to={path}

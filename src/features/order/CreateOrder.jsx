@@ -3,45 +3,22 @@ import { Form, redirect, useActionData, useNavigation } from 'react-router-dom';
 import { createOrder } from '../../services/apiRestaurant';
 import InputComponent from '../../utils/InputComponent';
 import Button from '../../utils/Button';
-
+import { useSelector } from 'react-redux';
+import { clearCart, getCart } from '../cart/CartSlice';
+import EmptyCart from '../cart/EmptyCart';
+import { store } from '../../store';
 // https://uibakery.io/regex-library/phone-number
 const isValidPhone = (str) =>
   /^\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}$/.test(
     str,
   );
 
-const fakeCart = [
-  {
-    pizzaId: 12,
-    name: 'Mediterranean',
-    quantity: 2,
-    unitPrice: 16,
-    totalPrice: 32,
-  },
-  {
-    pizzaId: 6,
-    name: 'Vegetale',
-    quantity: 1,
-    unitPrice: 13,
-    totalPrice: 13,
-  },
-  {
-    pizzaId: 11,
-    name: 'Spinach and Mushroom',
-    quantity: 1,
-    unitPrice: 15,
-    totalPrice: 15,
-  },
-];
-
-console.log(fakeCart);
-console.log(JSON.stringify(fakeCart));
-
 export default function CreateOrder() {
   // const [withPriority, setWithPriority] = useState(false);
-  const cart = fakeCart;
+  const cart = useSelector(getCart);
   const navigation = useNavigation();
   const formErrors = useActionData();
+  const userName = useSelector((state) => state.user.userName);
 
   const isSubmitting = navigation.state === 'submitting';
   return (
@@ -54,7 +31,12 @@ export default function CreateOrder() {
           <label className="sm:basis-40">First Name</label>
 
           <div className="grow">
-            <InputComponent type="text" name="customer" placeholder="name" />
+            <InputComponent
+              type="text"
+              name="customer"
+              placeholder="name"
+              defaultValue={userName}
+            />
           </div>
         </div>
 
@@ -80,7 +62,7 @@ export default function CreateOrder() {
         <div className="mb-12 flex items-center gap-5">
           <input
             type="checkbox"
-            name="priorty"
+            name="priority"
             id="priority"
             className="h-5 w-5 cursor-pointer rounded-md border border-gray-400 accent-yellow-500"
             // value={withPriority}
@@ -122,7 +104,9 @@ export async function action({ request }) {
     errors.phone =
       'Please give us your correct phone number. We might need it to contact you';
   //if everything is okay create thee order and redirect
-  const newOrder = await createOrder(order);
   if (Object.keys(errors).length > 0) return errors;
+  const newOrder = await createOrder(order);
+  store.dispatch(clearCart());
+
   return redirect(`/order/${newOrder.id}`);
 }
