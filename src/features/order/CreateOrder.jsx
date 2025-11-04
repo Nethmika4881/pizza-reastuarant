@@ -4,9 +4,9 @@ import { createOrder } from '../../services/apiRestaurant';
 import InputComponent from '../../utils/InputComponent';
 import Button from '../../utils/Button';
 import { useSelector } from 'react-redux';
-import { clearCart, getCart } from '../cart/CartSlice';
-import EmptyCart from '../cart/EmptyCart';
+import { clearCart, getCart, getTotalAmount } from '../cart/CartSlice';
 import { store } from '../../store';
+import { formatCurrency } from '../../utils/helpers';
 // https://uibakery.io/regex-library/phone-number
 const isValidPhone = (str) =>
   /^\+?\d{1,4}?[-.\s]?\(?\d{1,3}?\)?[-.\s]?\d{1,4}[-.\s]?\d{1,4}[-.\s]?\d{1,9}$/.test(
@@ -14,12 +14,14 @@ const isValidPhone = (str) =>
   );
 
 export default function CreateOrder() {
-  // const [withPriority, setWithPriority] = useState(false);
+  const [withPriority, setWithPriority] = useState(false);
   const cart = useSelector(getCart);
   const navigation = useNavigation();
   const formErrors = useActionData();
   const userName = useSelector((state) => state.user.userName);
-
+  const selectTotalAmount = useSelector(getTotalAmount);
+  const priorityPrice = withPriority ? selectTotalAmount * 0.2 : 0;
+  const totalPrice = selectTotalAmount + priorityPrice;
   const isSubmitting = navigation.state === 'submitting';
   return (
     <div className="px-4 py-6">
@@ -65,9 +67,8 @@ export default function CreateOrder() {
             name="priority"
             id="priority"
             className="h-5 w-5 cursor-pointer rounded-md border border-gray-400 accent-yellow-500"
-            // value={withPriority}
-
-            // onChange={(e) => setWithPriority(e.target.checked)}
+            value={withPriority}
+            onChange={(e) => setWithPriority(e.target.checked)}
           />
           <label htmlFor="priority" className="font-medium">
             Want to yo give your order priority?
@@ -76,7 +77,9 @@ export default function CreateOrder() {
 
         <div>
           <Button type="primary" isDisabled={isSubmitting}>
-            {isSubmitting ? 'Placing the order' : 'order now'}
+            {isSubmitting
+              ? 'Placing the order'
+              : `order now ${formatCurrency(totalPrice)}`}
           </Button>
           <input type="hidden" name="cart" value={JSON.stringify(cart)} />
         </div>
@@ -96,7 +99,7 @@ export async function action({ request }) {
   const order = {
     ...data,
     cart: JSON.parse(data.cart),
-    priority: data.priority === 'on',
+    priority: data.priority === 'true',
   };
 
   const errors = {};

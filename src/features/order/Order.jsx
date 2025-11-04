@@ -88,7 +88,7 @@ export default function Order() {
 
       <ul className="divide-y divide-stone-100 border-t border-b border-stone-100">
         {cart.map((item) => (
-          <OrderItem item={item} key={item.id} />
+          <OrderItem item={item} key={item.pizzaId} />
         ))}
       </ul>
       <div className="space-y-2 bg-stone-100 px-6 py-5">
@@ -110,7 +110,6 @@ export default function Order() {
 
 // eslint-disable-next-line react-refresh/only-export-components
 export async function loader({ params }) {
-  console.log(params);
   const order = await getOrder(params.orderId);
   return order;
 }
